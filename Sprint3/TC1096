@@ -1,0 +1,77 @@
+import unittest
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+#TC3
+class TestSamsungRegistration3(unittest.TestCase):
+    def setUp(self):
+        self.driver = webdriver.Chrome()
+        self.driver.implicitly_wait(10)
+        self.driver.maximize_window()
+        self.driver.get("https://shop.samsung.com/ar/")
+
+    def test_register_with_unverified_email(self):
+        wait = WebDriverWait(self.driver, 60)
+
+        # Click on the "Entrar" (Login) button
+        account = wait.until(EC.presence_of_element_located((By.ID, "user-bold")))
+        account.click()
+        print("Ingreso al Login")
+
+        # Verify the title of the Login page
+        login_title = wait.until(EC.presence_of_element_located((By.XPATH, "//h3[normalize-space()='Entrar con e-mail y contraseña']")))
+        self.assertEqual(login_title.text, "Entrar con e-mail y contraseña", "Login page title mismatch")
+        print("Valido titulo de la pagina Login")
+
+        # Click on the "¿No tiene una cuenta? Regístrese" (Don't have an account? Register) link
+        linkRegister = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(),'¿No tiene una cuenta? Regístrese')]")))
+        self.driver.execute_script("arguments[0].scrollIntoView();", linkRegister)
+        linkRegister.click()
+        print("Ingreso al Registro")
+
+        # Verify the title of the Registration page
+        register_title = wait.until(EC.presence_of_element_located((By.XPATH, "//h3[normalize-space()='Recibir código de acceso por e-mail']")))
+        self.assertEqual(register_title.text, "Recibir código de acceso por e-mail", "Registration page title mismatch")
+        print("Valido titulo de la pagina Registro")
+
+        self.driver.find_element(By.XPATH, "//input[@placeholder='E-mail']").send_keys("email@prueba.com")
+        
+
+        # Scroll to the "Entrar" button and click it
+        btnEnviar = wait.until(EC.presence_of_element_located((By.XPATH, "//span[@class='t-small'][contains(.,'Enviar')]")))
+        self.driver.execute_script("arguments[0].scrollIntoView();", btnEnviar)
+        print("Buscar el boton, Enviar")
+        
+        btnEnviar.click()
+        print("Hacer click en Enviar")
+        self.driver.execute_script("window.scrollTo(0, 0);")
+        self.compareMensajes(wait)
+
+    def compareMensajes(self, wait):
+        tituloEsperado = "Validar correo electrónico y crear una nueva contraseña"  
+        
+        smsUsrValidacion = wait.until(EC.presence_of_element_located((By.XPATH, "//body/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/h3[1]")))
+        tituloActual = smsUsrValidacion.text
+        
+        if tituloEsperado == tituloActual:
+            print("Validation pass: el titulo es correcto; Validar correo electrónico y crear una nueva contraseña")
+        else:
+            print(f"Validation failed: El mensaje actual es '{tituloActual}', pero el mensaje esperado es '{tituloEsperado}'.")
+        
+        register_password = wait.until(EC.presence_of_element_located((By.XPATH, "//h3[normalize-space()='Recibir código de acceso por e-mail']")))
+        self.driver.find_element(By.XPATH, "//body/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/form[1]/div[2]/div[1]/label[1]/div[1]/input[1]").send_keys("florenciaMuñoz")
+       
+        self.driver.save_screenshot("TC003-passwordInvalido.png")
+        print("Guardar captura de pantalla en el path:..\Grupo 3 Samsung Arg\src\Tests")
+
+        
+
+    
+
+    def tearDown(self):
+        self.driver.quit()
+
+if __name__ == "__main__":
+    unittest.main()
+
